@@ -182,6 +182,48 @@ app.get('/api/tickets/stats', async (req, res) => {
   }
 });
 
+// ==========================================
+// BFHL Challenge Endpoints
+// ==========================================
+
+app.get('/bfhl', (req, res) => {
+  res.status(200).json({ operation_code: 1 });
+});
+
+app.post('/bfhl', (req, res) => {
+  try {
+    const data = req.body.data || [];
+    const numbers = [];
+    const alphabets = [];
+    
+    data.forEach(item => {
+      if (!isNaN(item)) {
+        numbers.push(item);
+      } else if (typeof item === 'string' && item.length === 1 && /[a-zA-Z]/.test(item)) {
+        alphabets.push(item);
+      }
+    });
+
+    let highest_alphabet = [];
+    if (alphabets.length > 0) {
+      const highest = alphabets.reduce((a, b) => a.toLowerCase() > b.toLowerCase() ? a : b);
+      highest_alphabet.push(highest);
+    }
+
+    res.json({
+      is_success: true,
+      user_id: "rajveer_singh_chouhan_23102003", // Placeholder DOB format
+      email: "rajveersingh231052@acropolis.in",
+      roll_number: "24",
+      numbers: numbers,
+      alphabets: alphabets,
+      highest_alphabet: highest_alphabet
+    });
+  } catch (error) {
+    res.status(400).json({ is_success: false, error: error.message });
+  }
+});
+
 // Database Connection & Server Start
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;

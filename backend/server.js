@@ -72,13 +72,25 @@ app.post('/api/tickets', async (req, res) => {
   }
 });
 
-// 2. List Tickets
+// 2. List Tickets (with optional filters)
 app.get('/api/tickets', async (req, res) => {
   try {
-    const tickets = await Ticket.find().sort({ createdAt: -1 });
+    const { status, priority, breachedSla } = req.query;
+    
+    // Build DB query for direct fields
+    const query = {};
+    if (status) query.status = status;
+    if (priority) query.priority = priority;
+
+    const tickets = await Ticket.find(query).sort({ createdAt: -1 });
     
     // Dynamically compute ageMinutes and slaBreached
-    const enrichedTickets = tickets.map(enrichTicketWithStats);
+    let enrichedTickets = tickets.map(enrichTicketWithStats);
+    
+    // Filter by derived field breachedSla if requested
+    if (breachedSla === 'true') {
+      enrichedTickets = enrichedTickets.filter(t => t.slaBreached);
+    }
     
     res.json(enrichedTickets);
   } catch (err) {
@@ -154,10 +166,15 @@ app.get('/api/tickets/stats', async (req, res) => {
         resolved: enriched.filter(t => t.status === 'resolved').length,
         closed: enriched.filter(t => t.status === 'closed').length
       },
-      breachedSla: enriched.filter(t => t.slaBreached && (t.status === 'open' || t.status === 'in_progress')).length // Only count open/in-progress as breached? Or all? Let's count all breached
+      byPriority: {
+        urgent: enriched.filter(t => t.priority === 'urgent').length,
+        high: enriched.filter(t => t.priority === 'high').length,
+        medium: enriched.filter(t => t.priority === 'medium').length,
+        low: enriched.filter(t => t.priority === 'low').length
+      },
+      // Only count SLA-breached tickets that are currently open/in-progress
+      breachedSlaOpen: enriched.filter(t => t.slaBreached && (t.status === 'open' || t.status === 'in_progress')).length
     };
-    
-    stats.breachedSlaTotal = enriched.filter(t => t.slaBreached).length;
 
     res.json(stats);
   } catch (err) {

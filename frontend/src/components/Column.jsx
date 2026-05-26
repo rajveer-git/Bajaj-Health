@@ -3,7 +3,14 @@ import TicketCard from './TicketCard';
 
 function Column({ title, status, tickets, onMove }) {
   return (
-    <div className="column">
+    <div 
+      className="column"
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        const ticketId = e.dataTransfer.getData('ticketId');
+        if (ticketId) onMove(ticketId, status);
+      }}
+    >
       <div className="column-header">
         <h2>{title}</h2>
         <span className="ticket-count">{tickets.length}</span>

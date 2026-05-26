@@ -13,7 +13,11 @@ function TicketCard({ ticket, onMove, currentStatus }) {
   const { prev, next } = AVAILABLE_MOVES[currentStatus] || {};
 
   return (
-    <div className={`ticket-card ${ticket.slaBreached ? 'sla-breached' : ''}`}>
+    <div 
+      className={`ticket-card ${ticket.slaBreached ? 'sla-breached' : ''}`}
+      draggable
+      onDragStart={(e) => e.dataTransfer.setData('ticketId', ticket._id)}
+    >
       <div className="ticket-header">
         <h3 className="ticket-subject">{ticket.subject}</h3>
         {ticket.slaBreached && (

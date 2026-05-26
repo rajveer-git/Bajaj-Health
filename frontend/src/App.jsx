@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Board from './components/Board';
 import TicketForm from './components/TicketForm';
+import StatsBlob from './components/StatsBlob';
 import { Plus } from 'lucide-react';
 
 function App() {
@@ -24,7 +25,8 @@ function App() {
         </button>
       </header>
       
-      <Board refreshTrigger={refreshTrigger} />
+      <StatsBlob refreshTrigger={refreshTrigger} />
+      <Board refreshTrigger={refreshTrigger} onTicketMoved={() => setRefreshTrigger(prev => prev + 1)} />
       
       {isFormOpen && (
         <TicketForm 
